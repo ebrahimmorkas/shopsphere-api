@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ShopSphere.Api/ShopSphere.Api.csproj" />
+    <Project Path="src/ShopSphere.Application/ShopSphere.Application.csproj" />
+    <Project Path="src/ShopSphere.Domain/ShopSphere.Domain.csproj" />
+    <Project Path="src/ShopSphere.Infrastructure/ShopSphere.Infrastructure.csproj" />
+  </Folder>
+</Solution>

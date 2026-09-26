@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\ShopSphere.Application\ShopSphere.Application.csproj" />
+  </ItemGroup>
+
+</Project>
