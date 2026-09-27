@@ -3,6 +3,7 @@ using ShopSphere.Api;
 using ShopSphere.Api.Extensions;
 using ShopSphere.Application;
 using ShopSphere.Infrastructure;
+using ShopSphere.Infrastructure.Authentication;
 using ShopSphere.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,10 +22,14 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference(options => options.WithTitle("ShopSphere API"));
 
     await app.Services.ApplyMigrationsAsync();
+    await app.Services.SeedAdminAsync();
 }
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapEndpoints();
 

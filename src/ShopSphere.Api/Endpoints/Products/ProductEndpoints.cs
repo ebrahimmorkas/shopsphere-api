@@ -1,13 +1,14 @@
 using ShopSphere.Api.Extensions;
 using ShopSphere.Application.Abstractions.Messaging;
 using ShopSphere.Application.Common;
-using ShopSphere.Application.Products;
 using ShopSphere.Application.Products.Create;
 using ShopSphere.Application.Products.Deactivate;
 using ShopSphere.Application.Products.GetById;
 using ShopSphere.Application.Products.Restock;
 using ShopSphere.Application.Products.Search;
 using ShopSphere.Application.Products.Update;
+using ShopSphere.Application.Products;
+using ShopSphere.Infrastructure.Authentication;
 
 namespace ShopSphere.Api.Endpoints.Products;
 
@@ -89,6 +90,7 @@ internal sealed class ProductEndpoints : IEndpoint
                 var result = await handler.Handle(command, cancellationToken);
                 return result.Match(id => Results.CreatedAtRoute("GetProductById", new { id }, new { id }));
             })
+            .RequireAuthorization(Policies.Admin)
             .WithName("CreateProduct")
             .WithSummary("Creates a product")
             .ProducesProblem(StatusCodes.Status400BadRequest)
@@ -107,6 +109,7 @@ internal sealed class ProductEndpoints : IEndpoint
                 var result = await handler.Handle(command, cancellationToken);
                 return result.Match(Results.NoContent);
             })
+            .RequireAuthorization(Policies.Admin)
             .WithName("UpdateProduct")
             .WithSummary("Updates product details and price")
             .ProducesProblem(StatusCodes.Status400BadRequest)
@@ -121,6 +124,7 @@ internal sealed class ProductEndpoints : IEndpoint
                 var result = await handler.Handle(new RestockProductCommand(id, request.Quantity), cancellationToken);
                 return result.Match(Results.NoContent);
             })
+            .RequireAuthorization(Policies.Admin)
             .WithName("RestockProduct")
             .WithSummary("Adds stock to a product")
             .ProducesProblem(StatusCodes.Status400BadRequest)
@@ -134,6 +138,7 @@ internal sealed class ProductEndpoints : IEndpoint
                 var result = await handler.Handle(new DeactivateProductCommand(id), cancellationToken);
                 return result.Match(Results.NoContent);
             })
+            .RequireAuthorization(Policies.Admin)
             .WithName("DeactivateProduct")
             .WithSummary("Soft-deletes a product by deactivating it")
             .ProducesProblem(StatusCodes.Status404NotFound);
