@@ -26,6 +26,21 @@ public static class DependencyInjection
         services.AddCaching(configuration);
         services.AddPersistence(configuration);
         services.AddAuthenticationInternal(configuration);
+        services.AddHealthChecksInternal(configuration);
+
+        return services;
+    }
+
+    private static IServiceCollection AddHealthChecksInternal(this IServiceCollection services, IConfiguration configuration)
+    {
+        var healthChecks = services.AddHealthChecks()
+            .AddDbContextCheck<ApplicationDbContext>("postgres", tags: ["ready"]);
+
+        var redisConnectionString = configuration.GetConnectionString("Redis");
+        if (!string.IsNullOrWhiteSpace(redisConnectionString))
+        {
+            healthChecks.AddRedis(redisConnectionString, "redis", tags: ["ready"]);
+        }
 
         return services;
     }
