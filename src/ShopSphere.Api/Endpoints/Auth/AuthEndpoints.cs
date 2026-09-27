@@ -18,7 +18,9 @@ internal sealed class AuthEndpoints : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("auth").WithTags(Tags.Auth);
+        var group = app.MapGroup("auth")
+            .WithTags(Tags.Auth)
+            .RequireRateLimiting(RateLimitingExtensions.AuthPolicy);
 
         group.MapPost("/register", async (
                 RegisterRequest request,
