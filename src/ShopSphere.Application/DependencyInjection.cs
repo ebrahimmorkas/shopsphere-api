@@ -23,7 +23,9 @@ public static class DependencyInjection
                 .AsImplementedInterfaces()
                 .WithScopedLifetime());
 
-        // Decorators are applied inside-out: validation runs first, then logging wraps the handler.
+        // Decorators are applied inside-out, so the request flows: validation -> logging -> caching -> handler.
+        services.TryDecorate(typeof(IQueryHandler<,>), typeof(CachingDecorator.QueryHandler<,>));
+
         services.TryDecorate(typeof(ICommandHandler<,>), typeof(LoggingDecorator.CommandHandler<,>));
         services.TryDecorate(typeof(ICommandHandler<>), typeof(LoggingDecorator.CommandBaseHandler<>));
         services.TryDecorate(typeof(IQueryHandler<,>), typeof(LoggingDecorator.QueryHandler<,>));
