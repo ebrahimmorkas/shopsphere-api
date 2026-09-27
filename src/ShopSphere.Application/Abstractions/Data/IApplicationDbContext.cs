@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ShopSphere.Domain.Categories;
 using ShopSphere.Domain.Orders;
 using ShopSphere.Domain.Products;
+using ShopSphere.Domain.Users;
 
 namespace ShopSphere.Application.Abstractions.Data;
 
@@ -16,6 +17,10 @@ public interface IApplicationDbContext
     DbSet<Product> Products { get; }
 
     DbSet<Order> Orders { get; }
+
+    DbSet<User> Users { get; }
+
+    DbSet<RefreshToken> RefreshTokens { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
