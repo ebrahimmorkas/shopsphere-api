@@ -1,3 +1,6 @@
+using Scalar.AspNetCore;
+using ShopSphere.Api;
+using ShopSphere.Api.Extensions;
 using ShopSphere.Application;
 using ShopSphere.Infrastructure;
 using ShopSphere.Infrastructure.Persistence;
@@ -6,16 +9,24 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
     .AddApplication()
-    .AddInfrastructure(builder.Configuration);
+    .AddInfrastructure(builder.Configuration)
+    .AddPresentation()
+    .AddEndpoints(typeof(Program).Assembly);
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    app.MapOpenApi();
+    app.MapScalarApiReference(options => options.WithTitle("ShopSphere API"));
+
     await app.Services.ApplyMigrationsAsync();
 }
 
-app.MapGet("/", () => "ShopSphere API");
+app.UseExceptionHandler();
+app.UseStatusCodePages();
+
+app.MapEndpoints();
 
 await app.RunAsync();
 
