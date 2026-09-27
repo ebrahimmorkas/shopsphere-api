@@ -6,6 +6,7 @@
     <Project Path="src/ShopSphere.Infrastructure/ShopSphere.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/ShopSphere.Api.IntegrationTests/ShopSphere.Api.IntegrationTests.csproj" />
     <Project Path="tests/ShopSphere.Application.UnitTests/ShopSphere.Application.UnitTests.csproj" />
     <Project Path="tests/ShopSphere.Domain.UnitTests/ShopSphere.Domain.UnitTests.csproj" />
   </Folder>
