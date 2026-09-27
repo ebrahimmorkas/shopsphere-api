@@ -1,10 +1,11 @@
 using ShopSphere.Api.Extensions;
 using ShopSphere.Application.Abstractions.Messaging;
-using ShopSphere.Application.Categories;
 using ShopSphere.Application.Categories.Create;
 using ShopSphere.Application.Categories.Delete;
 using ShopSphere.Application.Categories.GetAll;
 using ShopSphere.Application.Categories.Update;
+using ShopSphere.Application.Categories;
+using ShopSphere.Infrastructure.Authentication;
 
 namespace ShopSphere.Api.Endpoints.Categories;
 
@@ -35,6 +36,7 @@ internal sealed class CategoryEndpoints : IEndpoint
                 var result = await handler.Handle(new CreateCategoryCommand(request.Name, request.Description), cancellationToken);
                 return result.Match(id => Results.Created($"/api/v1/categories/{id}", new { id }));
             })
+            .RequireAuthorization(Policies.Admin)
             .WithName("CreateCategory")
             .WithSummary("Creates a category")
             .ProducesProblem(StatusCodes.Status400BadRequest)
@@ -49,6 +51,7 @@ internal sealed class CategoryEndpoints : IEndpoint
                 var result = await handler.Handle(new UpdateCategoryCommand(id, request.Name, request.Description), cancellationToken);
                 return result.Match(Results.NoContent);
             })
+            .RequireAuthorization(Policies.Admin)
             .WithName("UpdateCategory")
             .WithSummary("Updates a category")
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -62,6 +65,7 @@ internal sealed class CategoryEndpoints : IEndpoint
                 var result = await handler.Handle(new DeleteCategoryCommand(id), cancellationToken);
                 return result.Match(Results.NoContent);
             })
+            .RequireAuthorization(Policies.Admin)
             .WithName("DeleteCategory")
             .WithSummary("Deletes an empty category")
             .ProducesProblem(StatusCodes.Status404NotFound)
