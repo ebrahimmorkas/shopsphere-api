@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -10,6 +11,7 @@ using ShopSphere.Application.Abstractions.Authentication;
 using ShopSphere.Application.Abstractions.Data;
 using ShopSphere.Domain.Users;
 using ShopSphere.Infrastructure.Authentication;
+using ShopSphere.Infrastructure.Caching;
 using ShopSphere.Infrastructure.DomainEvents;
 using ShopSphere.Infrastructure.Persistence;
 
@@ -21,6 +23,7 @@ public static class DependencyInjection
     {
         services.AddSingleton(TimeProvider.System);
 
+        services.AddCaching(configuration);
         services.AddPersistence(configuration);
         services.AddAuthenticationInternal(configuration);
 
@@ -67,6 +70,33 @@ public static class DependencyInjection
         return services;
     }
 
+    private static IServiceCollection AddCaching(this IServiceCollection services, IConfiguration configuration)
+    {
+        // Redis becomes the distributed L2 cache when configured; otherwise HybridCache runs in-memory only.
+        var redisConnectionString = configuration.GetConnectionString("Redis");
+        if (!string.IsNullOrWhiteSpace(redisConnectionString))
+        {
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConnectionString;
+                options.InstanceName = "shopsphere:";
+            });
+        }
+
+        services.AddHybridCache(options =>
+        {
+            options.DefaultEntryOptions = new HybridCacheEntryOptions
+            {
+                Expiration = TimeSpan.FromMinutes(5),
+                LocalCacheExpiration = TimeSpan.FromMinutes(1)
+            };
+        });
+
+        services.AddScoped<CacheInvalidationInterceptor>();
+
+        return services;
+    }
+
     private static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("Database");
@@ -75,11 +105,12 @@ public static class DependencyInjection
             throw new InvalidOperationException("Connection string 'Database' is not configured.");
         }
 
-        services.AddDbContext<ApplicationDbContext>(options => options
+        services.AddDbContext<ApplicationDbContext>((sp, options) => options
             .UseNpgsql(connectionString, npgsql => npgsql
                 .MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Default)
                 .EnableRetryOnFailure(maxRetryCount: 3))
-            .UseSnakeCaseNamingConvention());
+            .UseSnakeCaseNamingConvention()
+            .AddInterceptors(sp.GetRequiredService<CacheInvalidationInterceptor>()));
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<IDomainEventsDispatcher, DomainEventsDispatcher>();
