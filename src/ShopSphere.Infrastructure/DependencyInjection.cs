@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using ShopSphere.Application.Abstractions.Authentication;
@@ -41,6 +42,15 @@ public static class DependencyInjection
         {
             healthChecks.AddRedis(redisConnectionString, "redis", tags: ["ready"]);
         }
+
+        // Probes must answer quickly even when a dependency hangs. PostConfigure runs after every check is registered.
+        services.PostConfigure<HealthCheckServiceOptions>(options =>
+        {
+            foreach (var registration in options.Registrations)
+            {
+                registration.Timeout = TimeSpan.FromSeconds(5);
+            }
+        });
 
         return services;
     }
