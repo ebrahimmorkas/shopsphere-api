@@ -4,6 +4,7 @@ using ShopSphere.Domain.Abstractions;
 using ShopSphere.Domain.Categories;
 using ShopSphere.Domain.Orders;
 using ShopSphere.Domain.Products;
+using ShopSphere.Domain.Users;
 using ShopSphere.Infrastructure.DomainEvents;
 
 namespace ShopSphere.Infrastructure.Persistence;
@@ -18,6 +19,10 @@ public sealed class ApplicationDbContext(
     public DbSet<Product> Products => Set<Product>();
 
     public DbSet<Order> Orders => Set<Order>();
+
+    public DbSet<User> Users => Set<User>();
+
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
