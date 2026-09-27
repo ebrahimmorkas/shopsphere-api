@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ShopSphere.Application.Abstractions.Caching;
 using ShopSphere.Application.Abstractions.Data;
 using ShopSphere.Application.Abstractions.Messaging;
 using ShopSphere.Domain.Abstractions;
@@ -6,7 +7,12 @@ using ShopSphere.Domain.Products;
 
 namespace ShopSphere.Application.Products.GetById;
 
-public sealed record GetProductByIdQuery(Guid ProductId) : IQuery<ProductResponse>;
+public sealed record GetProductByIdQuery(Guid ProductId) : ICachedQuery<ProductResponse>
+{
+    public string CacheKey => CacheKeys.Product(ProductId);
+
+    public TimeSpan? Expiration => TimeSpan.FromMinutes(10);
+}
 
 internal sealed class GetProductByIdQueryHandler(IApplicationDbContext dbContext)
     : IQueryHandler<GetProductByIdQuery, ProductResponse>
